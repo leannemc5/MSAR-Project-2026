@@ -25,6 +25,9 @@ plt.figure(figsize=(10,6))
 for T in temperatures:
   spectrum = planck(wavelength, T)
 
+  # normalise spectrafor easier comparison
+  spectrum = spectrum/np.max(spectrum)
+
   plt.plot(
       wavelength* 1e9,
       spectrum,
@@ -32,7 +35,7 @@ for T in temperatures:
   )
 
 plt.xlabel("Wavelength (nm)")
-plt.ylabel("Intensity")
-plt.title("Blackbody Spectrum")
+plt.ylabel("Normalised Intensity")
+plt.title("Blackbody Spectra")
 plt.legend()
 plt.show()
