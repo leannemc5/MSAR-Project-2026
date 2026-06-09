@@ -2,10 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 #constants
 h = 6.626e-34
-c = 3.0e8
+c = 2.998e8
 k = 1.381e-23
 
-wavelength = np.linspace(300e-9, 1100e-9, 1000)
+#sample range of wavelengths
+wavelength = np.linspace(100e-9, 3000e-9, 5000)
 
 # planks function
 def planck(wavelength, temperature):
@@ -15,17 +16,23 @@ def planck(wavelength, temperature):
   intensity = num/denom
   return intensity
 
-#generate spectra 
-sun = planck(wavelength, 5800)
-red_star = planck(wavelength, 3500)
-blue_star = planck(wavelength, 10000)
+#stellar temps
+temperatures = [3000, 5000, 7000, 10000]
 
-plt.plot(wavelength*1e9, red_star, label="3500 K")
-plt.plot(wavelength*1e9, sun, label="5800 K")
-plt.plot(wavelength*1e9, blue_star, label="10000 K")
+#plot
+plt.figure(figsize=(10,6))
+
+for T in temperatures:
+  spectrum = planck(wavelength, T)
+
+  plt.plot(
+      wavelength* 1e9,
+      spectrum,
+      label=f"{T} K"
+  )
 
 plt.xlabel("Wavelength (nm)")
 plt.ylabel("Intensity")
+plt.title("Blackbody Spectrum")
 plt.legend()
-
 plt.show()
