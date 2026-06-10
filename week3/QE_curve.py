@@ -1,4 +1,4 @@
-#needed libraires
+#needed libraries
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
@@ -8,7 +8,7 @@ h = 6.626e-34
 c = 3.0e8
 k = 1.381e-23
 
-#plancks gunction
+#planck function
 def planck(wavelength, T):
 
     exponent = (h * c) / (wavelength * k * T)
@@ -33,17 +33,7 @@ wavelengths_nm = np.linspace(
 
 wavelengths_m = wavelengths_nm * 1e-9
 
-T = 6000
-
-spectrum = planck(
-    wavelengths_m,
-    T
-)
-
-# normalise spectrum
-spectrum = spectrum / np.max(spectrum)
-
-#detector qe data
+#detector de data
 qe_wavelength_nm = np.array([
     350, 400, 450, 500, 550, 600,
     650, 700, 750, 800, 850, 900,
@@ -70,43 +60,49 @@ qe_curve = qe_interp(
     wavelengths_nm
 )
 
-#add detector spectrum
-detected_spectrum = (
-    spectrum *
-    qe_curve
-)
+#plots of QE curves
+temperatures = [
+    3000,
+    6000,
+    10000
+]
 
-# QE curve
-plt.figure(figsize=(10,6))
-plt.plot(
-    wavelengths_nm,
-    qe_curve
-)
-
-plt.xlabel("Wavelength (nm)")
-plt.ylabel("Quantum Efficiency")
-plt.title("Detector QE Curve")
-plt.grid(True)
-plt.show()
-
-#plot og spectrum against new spectrum
 plt.figure(figsize=(10,6))
 
-plt.plot(
-    wavelengths_nm,
-    spectrum,
-    label="Original Spectrum"
-)
+for T in temperatures:
 
-plt.plot(
-    wavelengths_nm,
-    detected_spectrum,
-    label="After Detector QE"
-)
+    spectrum = planck(
+        wavelengths_m,
+        T
+    )
+
+    #normalise blackbody
+    spectrum = (
+        spectrum /
+        np.max(spectrum)
+    )
+
+    #add QE
+    detected_spectrum = (
+        spectrum *
+        qe_curve
+    )
+
+    # normalise
+    detected_spectrum = (
+        detected_spectrum /
+        np.max(detected_spectrum)
+    )
+
+    plt.plot(
+        wavelengths_nm,
+        detected_spectrum,
+        label=f"{T} K"
+    )
 
 plt.xlabel("Wavelength (nm)")
 plt.ylabel("Normalised Intensity")
-plt.title("Effect of Detector Quantum Efficiency")
+plt.title("Detector QE Corrected Spectra")
 plt.legend()
 plt.grid(True)
 plt.show()
