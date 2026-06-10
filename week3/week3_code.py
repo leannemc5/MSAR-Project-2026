@@ -1,17 +1,51 @@
-# constants
+#needed libraries
+import numpy as np
+import matplotlib.pyplot as plt
+
+#constants
 h = 6.626e-34
-c = 3e8
+c = 3.0e8
+k = 1.381e-23
 
-#fake flux
-flux = 1e-9
-exposure_time = 10
+#plancks function
+def planck(wavelength, temperature):
 
-lambda_eff = np.array([400e-9, 550e-9, 700e-9])
+    exponent = (h * c) / (wavelength * k * temperature)
 
-#calculate photon energy
-photon_energy = (h*c)/ lambda_eff
+    intensity = (
+        (2 * h * c**2)
+        /
+        (wavelength**5 * (np.exp(exponent) - 1))
+    )
 
+    return intensity
+
+wavelengths = np.linspace(100e-9, 3000e-9, 5000)
+
+#stellar temps
+temperature = 6000
+
+spectrum = planck(wavelengths, temperature)
+
+#total flux
+total_flux = np.trapezoid(spectrum, wavelengths)
+
+print("Integrated Flux =", total_flux)
+
+#wavelength
+lambda_eff = 550e-9
+
+#photon energy
+photon_energy = (h * c) / lambda_eff
+
+print("Photon Energy =", photon_energy)
+
+#exposure time
+exposure_time = 100
+
+#photon counts
 photon_counts = (
-    flux*exposure_time
-)/photon_energy
-print(photon_counts)
+    total_flux * exposure_time
+) / photon_energy
+
+print("Photon Counts =", photon_counts)
