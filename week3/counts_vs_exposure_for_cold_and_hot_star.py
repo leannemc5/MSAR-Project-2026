@@ -19,11 +19,12 @@ def planck(wavelength, temperature):
 
     return intensity
 
-
 wavelengths = np.linspace(100e-9, 3000e-9, 5000)
 
 # convert to nm for plotting
 wavelengths_nm = wavelengths * 1e9
+
+#wavelength
 lambda_eff = 550e-9
 
 # photon energy
@@ -38,6 +39,7 @@ colours = {
     10000: "blue"
 }
 
+#exposures
 exposure_times = np.linspace(1, 100, 50)
 
 plt.figure(figsize=(10,6))
@@ -47,10 +49,10 @@ for T in temperatures:
 
     #integrate total flux
     total_flux = np.trapezoid(
-        wavelengths
+        spectrum,wavelengths
     )
 
-    #calculates count for each exposure
+    #Counts for each exposure
     counts = []
 
     for t in exposure_times:
@@ -61,7 +63,6 @@ for T in temperatures:
 
         counts.append(photon_counts)
 
-    #plot counts vs exposure time
     plt.plot(
         exposure_times,
         counts,
@@ -70,6 +71,7 @@ for T in temperatures:
     )
 plt.xlabel("Exposure Time (s)")
 plt.ylabel("Photon Counts")
+plt.yscale("log")
 plt.title("Photon Counts vs Exposure Time")
 plt.legend()
 plt.grid(True)
