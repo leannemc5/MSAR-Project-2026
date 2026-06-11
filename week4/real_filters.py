@@ -1,4 +1,3 @@
-#needed libraries
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
@@ -9,7 +8,7 @@ h = 6.626e-34
 c = 3e8
 k = 1.381e-23
 
-#plancks function
+#planck function
 def planck(wavelength, T):
     exponent = (h * c) / (wavelength * k * T)
     intensity = (
@@ -19,7 +18,6 @@ def planck(wavelength, T):
     ) / (
         np.exp(exponent) - 1
     )
-
     return intensity
 
 wavelengths_nm = np.linspace(
@@ -37,8 +35,17 @@ spectrum = planck(
     T
 )
 
+#normalise the spectrum
 spectrum = (
     spectrum /
+    np.trapezoid(
+        spectrum,
+        wavelengths_m
+    )
+)
+
+print(
+    "Spectrum area:",
     np.trapezoid(
         spectrum,
         wavelengths_m
@@ -51,7 +58,7 @@ g_filter = filters.load_filter(
 )
 
 filter_interp = interp1d(
-    g_filter.wavelength/ 10,
+    g_filter.wavelength / 10,
     g_filter.response,
     bounds_error=False,
     fill_value=0
@@ -61,12 +68,21 @@ filter_response = filter_interp(
     wavelengths_nm
 )
 
+#add filter
 filtered_spectrum = (
     spectrum *
     filter_response
 )
 
-# detector qe data
+print(
+    "Filtered area:",
+    np.trapezoid(
+        filtered_spectrum,
+        wavelengths_m
+    )
+)
+
+#detector qe data
 qe_wavelength_nm = np.array([
     350, 400, 450, 500, 550, 600,
     650, 700, 750, 800, 850, 900,
@@ -98,6 +114,14 @@ detected_spectrum = (
     qe_curve
 )
 
+print(
+    "Detected area:",
+    np.trapezoid(
+        detected_spectrum,
+        wavelengths_m
+    )
+)
+
 #integrate flux
 total_flux = np.trapezoid(
     detected_spectrum,
@@ -105,35 +129,26 @@ total_flux = np.trapezoid(
 )
 
 print(
-    f"Integrated Flux = {total_flux:.3e}"
+    f"\nIntegrated Flux = {total_flux:.4f}"
 )
 
-#photon count
-mean_wavelength = np.average(
-    wavelengths_m,
-    weights=detected_spectrum
-)
 
-photon_energy = (
-    h * c
-    /
-    mean_wavelength
-)
+# toy photon count model
+starting_photons = 100000
 
 exposure_time = 10
 
 photon_counts = (
     total_flux *
+    starting_photons *
     exposure_time
-    /
-    photon_energy
 )
 
 print(
-    f"Photon Counts = {photon_counts:.3e}"
+    f"Detected Photons = {photon_counts:.0f}"
 )
 
-#plot of spectrums
+#plot spectrum
 plt.figure(figsize=(10,6))
 
 plt.plot(
@@ -144,38 +159,19 @@ plt.plot(
 
 plt.plot(
     wavelengths_nm,
-    filtered_spectrum / np.max(filtered_spectrum),
+    filtered_spectrum / np.max(spectrum),
     label="After Filter"
 )
 
 plt.plot(
     wavelengths_nm,
-    detected_spectrum / np.max(detected_spectrum),
+    detected_spectrum / np.max(spectrum),
     label="After QE"
 )
 
 plt.xlabel("Wavelength (nm)")
-plt.ylabel("Normalised Intensity")
+plt.ylabel("Relative Intensity")
 plt.title("Spectrum Through Filter and Detector")
 plt.legend()
 plt.grid(True)
 plt.show()
-
-#plot of qe curve
-plt.figure(figsize=(10,6))
-
-plt.plot(
-    qe_wavelength_nm,
-    qe_percent,
-    marker="o"
-)
-
-plt.xlabel("Wavelength (nm)")
-plt.ylabel("Quantum Efficiency (%)")
-plt.title("OSIRIS Detector QE")
-plt.grid(True)
-plt.show()
-
-print("Spectrum max =", np.max(spectrum))
-print("Filter max =", np.max(filter_response))
-print("QE max =", np.max(qe_curve))
