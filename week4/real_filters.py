@@ -1,3 +1,4 @@
+#needed libraries
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
@@ -10,9 +11,7 @@ k = 1.381e-23
 
 #plancks function
 def planck(wavelength, T):
-
     exponent = (h * c) / (wavelength * k * T)
-
     intensity = (
         (2 * h * c**2)
         /
@@ -38,14 +37,18 @@ spectrum = planck(
     T
 )
 
-# real filter lsst g
+spectrum = (
+    spectrum /
+    np.trapezoid(
+        spectrum,
+        wavelengths_m
+    )
+)
+
+#real filter
 g_filter = filters.load_filter(
     "lsst2023-g"
 )
-
-#g_filter = filters.load_filter(
- #   "bessell-V"
-#)
 
 filter_interp = interp1d(
     g_filter.wavelength/ 10,
@@ -63,7 +66,7 @@ filtered_spectrum = (
     filter_response
 )
 
-#detector qe data
+# detector qe data
 qe_wavelength_nm = np.array([
     350, 400, 450, 500, 550, 600,
     650, 700, 750, 800, 850, 900,
@@ -89,13 +92,13 @@ qe_curve = qe_interp(
     wavelengths_nm
 )
 
-#added qe
+#add qe
 detected_spectrum = (
     filtered_spectrum *
     qe_curve
 )
 
-#integrated flux
+#integrate flux
 total_flux = np.trapezoid(
     detected_spectrum,
     wavelengths_m
@@ -105,7 +108,7 @@ print(
     f"Integrated Flux = {total_flux:.3e}"
 )
 
-#photon counts
+#photon count
 mean_wavelength = np.average(
     wavelengths_m,
     weights=detected_spectrum
@@ -130,7 +133,7 @@ print(
     f"Photon Counts = {photon_counts:.3e}"
 )
 
-#plot of spectrum stages
+#plot of spectrums
 plt.figure(figsize=(10,6))
 
 plt.plot(
@@ -158,7 +161,7 @@ plt.legend()
 plt.grid(True)
 plt.show()
 
-#qe curve
+#plot of qe curve
 plt.figure(figsize=(10,6))
 
 plt.plot(
@@ -172,3 +175,7 @@ plt.ylabel("Quantum Efficiency (%)")
 plt.title("OSIRIS Detector QE")
 plt.grid(True)
 plt.show()
+
+print("Spectrum max =", np.max(spectrum))
+print("Filter max =", np.max(filter_response))
+print("QE max =", np.max(qe_curve))
